@@ -113,11 +113,11 @@ https://app.finout.io/app/total-cost?accountId=...&filters=...
 
 | Flag              | Description |
 |-------------------|-------------|
-| `--view-id`       | **(Required)** Finout view ID |
-| `--start-date`    | Start date (YYYY-MM-DD) |
-| \`--end-date\`      | End date (YYYY-MM-DD) |
-| \`--omit-dates\`    | Omit the date filter entirely |
-| \`--group-by\`      | Grouping key (\`service\`, \`vendor\`, \`region\`, etc.) |
-| \`--top-n\`         | How many cost items to return (default: 5) |
-| \`--include-total\` | Include \`"total"\` object with both top-N and full view totals |
-| \`--push-url\`      | POST final payload to a URL |
+| ```--view-id```       | **(Required)** Finout view ID |
+| ```--start-date```    | Start date (YYYY-MM-DD) |
+| ```--end-date```      | End date (YYYY-MM-DD) |
+| ```--omit-dates```    | Omit the date filter entirely |
+| ```--group-by```      | Grouping key (\`service\`, \`vendor\`, \`region\`, etc.) |
+| ```--top-n```         | How many cost items to return (default: 5) |
+| ```--include-total``` | Include \`"total"\` object with both top-N and full view totals |
+| ```--push-url```      | POST final payload to a URL |
