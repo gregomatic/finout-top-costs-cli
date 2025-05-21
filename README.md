@@ -21,18 +21,18 @@ A Python CLI tool for querying Finout cost views, extracting the top N cost cont
 
 #### 1. Install dependencies
 
-\`\`\`bash
+```bash
 pip install -r requirements.txt
-\`\`\`
+```
 
 #### 2. Add a \`.env\` file
 
 Create a `.env` file like this:
 
-\`\`\`
+```
 FINOUT_CLIENT_ID=your-client-id
 FINOUT_SECRET_KEY=your-secret-key
-\`\`\`
+```
 
 ---
 
@@ -40,36 +40,36 @@ FINOUT_SECRET_KEY=your-secret-key
 
 #### Basic (last month’s top 5 services)
 
-\`\`\`bash
+```bash
 python3 finout_top_costs.py \\
   --view-id YOUR_VIEW_ID \\
   --start-date 2024-04-01 \\
   --end-date 2024-04-30 \\
   --group-by service \\
   --include-total
-\`\`\`
+```
 
 #### Show top 10 vendors without date filters:
 
-\`\`\`bash
+```bash
 python3 finout_top_costs.py \\
   --view-id YOUR_VIEW_ID \\
   --omit-dates \\
   --group-by vendor \\
   --top-n 10 \\
   --include-total
-\`\`\`
+```
 
 #### Push the results to another API
 
-\`\`\`bash
+```bash
 python3 finout_top_costs.py \\
   --view-id YOUR_VIEW_ID \\
   --start-date 2024-04-01 \\
   --end-date 2024-04-30 \\
   --push-url https://your-api.com/receive \\
   --group-by service
-\`\`\`
+```
 
 ---
 
@@ -77,7 +77,7 @@ python3 finout_top_costs.py \\
 
 Example:
 
-\`\`\`json
+```json
 {
   "action": "push_top_costs",
   "report_date": "2024-04-30",
@@ -95,7 +95,7 @@ Example:
     "report_type": "cli_summary"
   }
 }
-\`\`\`
+```
 
 ---
 
@@ -103,9 +103,9 @@ Example:
 
 The tool prints a filtered Finout link like:
 
-\`\`\`
+```
 https://app.finout.io/app/total-cost?accountId=...&filters=...
-\`\`\`
+```
 
 ---
 
@@ -121,4 +121,3 @@ https://app.finout.io/app/total-cost?accountId=...&filters=...
 | \`--top-n\`         | How many cost items to return (default: 5) |
 | \`--include-total\` | Include \`"total"\` object with both top-N and full view totals |
 | \`--push-url\`      | POST final payload to a URL |
-EOF
