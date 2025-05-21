@@ -51,7 +51,6 @@ def query_finout_costs(start_date, end_date, omit_dates=False, view_id=None, gro
 
     try:
         data = response.json()
-        print("\n✅ Raw decoded response keys:", list(data.keys()) if isinstance(data, dict) else "[not a dict]")
         if isinstance(data, dict):
             if "results" in data:
                 return data["results"]
@@ -77,44 +76,54 @@ def summarize_top_costs(data, include_total=False, top_n=5):
 
     print(f"\n📦 Parsed {len(data)} items from Finout API")
 
-    for i, item in enumerate(data):
-        print(f"\n🔎 Item {i}:")
-        print(json.dumps(item, indent=2) if isinstance(item, dict) else item)
-
     cost_summary = defaultdict(float)
-    for item in data:
-        if isinstance(item, dict):
-            if item.get("name") == "Total":
-                if include_total:
-                    total_cost = sum(float(entry.get("cost", 0)) for entry in item.get("data", []))
-                    cost_summary[item["name"]] += total_cost
-                continue
-            daily_costs = item.get("data", [])
-            total_cost = sum(float(entry.get("cost", 0)) for entry in daily_costs)
-            cost_summary[item.get("name", "Unknown")] += total_cost
+    full_total_cost = 0.0
 
-    total = sum(cost_summary.values())
-    if total == 0:
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+
+        name = item.get("name", "Unknown")
+        daily_costs = item.get("data", [])
+        total_cost = sum(float(entry.get("cost", 0)) for entry in daily_costs)
+
+        if name == "Total":
+            full_total_cost = total_cost
+            continue
+
+        cost_summary[name] += total_cost
+
+    # Extract top N and compute top-N total
+    top = sorted(cost_summary.items(), key=lambda x: x[1], reverse=True)[:top_n]
+    top_n_total = sum(amount for _, amount in top)
+
+    if top_n_total == 0:
         print("\n⚠️ Total cost is 0 — no cost entries will be included.")
         return [], None
-
-    top = sorted([(k, v) for k, v in cost_summary.items() if k != "Total"], key=lambda x: x[1], reverse=True)[:top_n]
-
-    total_entry = None
-    if include_total and "Total" in cost_summary:
-        total_entry = {
-            "service": "Total",
-            "amount_usd": round(cost_summary["Total"], 2)
-        }
 
     results = [
         {
             "service": name,
             "amount_usd": round(amount, 2),
-            "percentage_of_total": round((amount / total) * 100, 1)
+            "percentage_of_total": round((amount / top_n_total) * 100, 1)
         }
         for name, amount in top
     ]
+
+    # Build total object with both top-N and full view total
+    total_entry = None
+    if include_total:
+        total_entry = {
+            "top_n": {
+                "service": f"Total (top {top_n})",
+                "amount_usd": round(top_n_total, 2)
+            }
+        }
+        if full_total_cost > 0:
+            total_entry["full"] = {
+                "service": "Total (view)",
+                "amount_usd": round(full_total_cost, 2)
+            }
 
     return results, total_entry
 
@@ -159,7 +168,7 @@ def main():
     parser.add_argument("--group-by", help="Optional: override grouping of the view")
     parser.add_argument("--omit-dates", action="store_true", help="Omit date filter in API request")
     parser.add_argument("--view-id", required=True, help="Finout view ID to query")
-    parser.add_argument("--include-total", action="store_true", help="Include total cost entry after top N services")
+    parser.add_argument("--include-total", action="store_true", help="Include total cost entry")
     parser.add_argument("--top-n", type=int, default=5, help="Number of top cost items to return (default: 5)")
 
     args = parser.parse_args()
@@ -168,16 +177,22 @@ def main():
         parser.error("--start-date and --end-date are required unless --omit-dates is used.")
 
     print(f"\n📅 Querying Finout from {args.start_date} to {args.end_date}")
-    data = query_finout_costs(args.start_date, args.end_date, omit_dates=args.omit_dates, view_id=args.view_id, group_by=args.group_by)
+    data = query_finout_costs(
+        start_date=args.start_date,
+        end_date=args.end_date,
+        omit_dates=args.omit_dates,
+        view_id=args.view_id,
+        group_by=args.group_by
+    )
 
     print("\n📊 Processing top cost services...")
     top_list, total_entry = summarize_top_costs(data, include_total=args.include_total, top_n=args.top_n)
-    payload = build_payload(top_list, args.end_date, total_entry=total_entry)
+    payload = build_payload(top_list, args.end_date or "N/A", total_entry=total_entry)
 
     print("\n✅ Top Cost Payload:")
     print(json.dumps(payload, indent=2))
 
-    top_service_names = [entry["service"] for entry in top_list if entry["service"] != "Total"]
+    top_service_names = [entry["service"] for entry in top_list]
     report_url = generate_filter_url(account_id="e6ad4c08-9ecd-4592-be61-7a13ad456259", top_services=top_service_names)
     print("\n🔗 Finout filtered report URL:")
     print(report_url)
@@ -190,4 +205,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
