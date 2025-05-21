@@ -113,8 +113,8 @@ https://app.finout.io/app/total-cost?accountId=...&filters=...
 
 | Flag              | Description |
 |-------------------|-------------|
-| \`--view-id\`       | **(Required)** Finout view ID |
-| \`--start-date\`    | Start date (YYYY-MM-DD) |
+| `--view-id`       | **(Required)** Finout view ID |
+| `--start-date`    | Start date (YYYY-MM-DD) |
 | \`--end-date\`      | End date (YYYY-MM-DD) |
 | \`--omit-dates\`    | Omit the date filter entirely |
 | \`--group-by\`      | Grouping key (\`service\`, \`vendor\`, \`region\`, etc.) |
